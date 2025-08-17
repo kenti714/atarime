@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using System.Linq;
 using Atarime.Core;
 
 namespace Atarime.CLI;
@@ -13,52 +14,78 @@ internal class Program
 
         if (mode == "loto7")
         {
+            var existing = CsvStorage.ReadLoto7(ResultPaths.Loto7);
+            int nextNo = existing.Count > 0 ? existing.Max(r => r.No) + 1 : 1;
             if (all)
             {
-                Console.WriteLine("Fetching all LOTO7 results...");
-                var results = await LotoFetcher.FetchAllLoto7Async(Console.WriteLine);
-                CsvStorage.WriteLoto7("loto7result.csv", results);
-                Console.WriteLine($"Saved {results.Count} LOTO7 results.");
+                Console.WriteLine("Fetching missing LOTO7 results...");
+                var results = await LotoFetcher.FetchLoto7SinceAsync(nextNo, Console.WriteLine);
+                if (results.Count > 0)
+                {
+                    existing.AddRange(results);
+                    CsvStorage.WriteLoto7(ResultPaths.Loto7, existing);
+                    Console.WriteLine($"Saved {results.Count} new LOTO7 results.");
+                }
+                else
+                {
+                    Console.WriteLine("No new LOTO7 results.");
+                }
             }
             else
             {
                 Console.WriteLine("Fetching latest LOTO7 result...");
-                var result = await LotoFetcher.FetchLoto7Async(Console.WriteLine);
-                if (result != null)
+                var results = await LotoFetcher.FetchLoto7SinceAsync(nextNo, Console.WriteLine);
+                if (results.Count > 0)
                 {
-                    Console.WriteLine($"No.{result.No} {result.Date:yyyyMMdd}: {string.Join(",", result.Numbers)} +[{string.Join(",", result.Bonus)}]");
-                    CsvStorage.AppendLoto7("loto7result.csv", result);
-                    Console.WriteLine("Saved LOTO7 result.");
+                    foreach (var r in results)
+                    {
+                        Console.WriteLine($"No.{r.No} {r.Date:yyyyMMdd}: {string.Join(",", r.Numbers)} +[{string.Join(",", r.Bonus)}]");
+                        CsvStorage.AppendLoto7(ResultPaths.Loto7, r);
+                    }
+                    Console.WriteLine($"Saved {results.Count} LOTO7 result(s).");
                 }
                 else
                 {
-                    Console.WriteLine("Failed to fetch LOTO7 result.");
+                    Console.WriteLine("No new LOTO7 result.");
                 }
 
             }
         }
         else
         {
+            var existing = CsvStorage.ReadLoto6(ResultPaths.Loto6);
+            int nextNo = existing.Count > 0 ? existing.Max(r => r.No) + 1 : 1;
             if (all)
             {
-                Console.WriteLine("Fetching all LOTO6 results...");
-                var results = await LotoFetcher.FetchAllLoto6Async(Console.WriteLine);
-                CsvStorage.WriteLoto6("loto6result.csv", results);
-                Console.WriteLine($"Saved {results.Count} LOTO6 results.");
+                Console.WriteLine("Fetching missing LOTO6 results...");
+                var results = await LotoFetcher.FetchLoto6SinceAsync(nextNo, Console.WriteLine);
+                if (results.Count > 0)
+                {
+                    existing.AddRange(results);
+                    CsvStorage.WriteLoto6(ResultPaths.Loto6, existing);
+                    Console.WriteLine($"Saved {results.Count} new LOTO6 results.");
+                }
+                else
+                {
+                    Console.WriteLine("No new LOTO6 results.");
+                }
             }
             else
             {
                 Console.WriteLine("Fetching latest LOTO6 result...");
-                var result = await LotoFetcher.FetchLoto6Async(Console.WriteLine);
-                if (result != null)
+                var results = await LotoFetcher.FetchLoto6SinceAsync(nextNo, Console.WriteLine);
+                if (results.Count > 0)
                 {
-                    Console.WriteLine($"No.{result.No} {result.Date:yyyyMMdd}: {string.Join(",", result.Numbers)} +[{result.Bonus}]");
-                    CsvStorage.AppendLoto6("loto6result.csv", result);
-                    Console.WriteLine("Saved LOTO6 result.");
+                    foreach (var r in results)
+                    {
+                        Console.WriteLine($"No.{r.No} {r.Date:yyyyMMdd}: {string.Join(",", r.Numbers)} +[{r.Bonus}]");
+                        CsvStorage.AppendLoto6(ResultPaths.Loto6, r);
+                    }
+                    Console.WriteLine($"Saved {results.Count} LOTO6 result(s).");
                 }
                 else
                 {
-                    Console.WriteLine("Failed to fetch LOTO6 result.");
+                    Console.WriteLine("No new LOTO6 result.");
                 }
 
             }
