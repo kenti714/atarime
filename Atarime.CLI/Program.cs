@@ -36,10 +36,6 @@ internal class Program
                 }
 
             }
-            else
-            {
-                Console.WriteLine("Failed to fetch LOTO7 result.");
-            }
         }
         else
         {
@@ -65,10 +61,6 @@ internal class Program
                     Console.WriteLine("Failed to fetch LOTO6 result.");
                 }
 
-            }
-            else
-            {
-                Console.WriteLine("Failed to fetch LOTO6 result.");
             }
         }
     }
