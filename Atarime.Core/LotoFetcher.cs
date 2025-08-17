@@ -23,7 +23,15 @@ public static class LotoFetcher
         try
         {
             // The LOTO6 result is provided via JSON which is loaded by the web page.
-            var json = await _http.GetStringAsync("https://www.mizuhobank.co.jp/takarakuji/lottery/json/loto6.json");
+            var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                "https://www.mizuhobank.co.jp/takarakuji/lottery/json/loto6.json");
+            request.Headers.Referrer = new Uri("https://www.mizuhobank.co.jp/takarakuji/check/loto/loto6/index.html");
+            request.Headers.Add("X-Requested-With", "XMLHttpRequest");
+            request.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+            var response = await _http.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            var json = await response.Content.ReadAsStringAsync();
 
             using var doc = JsonDocument.Parse(json);
             JsonElement root = doc.RootElement;
