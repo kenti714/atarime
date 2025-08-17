@@ -40,18 +40,38 @@ public class MainForm : Form
 
     private async Task FetchLatestAsync()
     {
-        var loto6 = await LotoFetcher.FetchLoto6Async();
-        if (loto6 != null)
+        void Log(string message)
         {
-            CsvStorage.AppendLoto6("loto6result.csv", loto6);
-            _output.AppendText($"LOTO6 {loto6.Date:yyyyMMdd}: {string.Join(",", loto6.Numbers)} +[{loto6.Bonus}]{Environment.NewLine}");
+            if (_output.InvokeRequired)
+                _output.Invoke(new Action(() => _output.AppendText(message + Environment.NewLine)));
+            else
+                _output.AppendText(message + Environment.NewLine);
         }
 
-        var loto7 = await LotoFetcher.FetchLoto7Async();
+        _output.AppendText("Fetching latest LOTO6..." + Environment.NewLine);
+        var loto6 = await LotoFetcher.FetchLoto6Async(Log);
+        if (loto6 != null)
+        {
+            _output.AppendText($"Draw {loto6.Date:yyyyMMdd}: {string.Join(",", loto6.Numbers)} +[{loto6.Bonus}]" + Environment.NewLine);
+            CsvStorage.AppendLoto6("loto6result.csv", loto6);
+            _output.AppendText("Saved LOTO6 result." + Environment.NewLine);
+        }
+        else
+        {
+            _output.AppendText("Failed to fetch LOTO6." + Environment.NewLine);
+        }
+
+        _output.AppendText("Fetching latest LOTO7..." + Environment.NewLine);
+        var loto7 = await LotoFetcher.FetchLoto7Async(Log);
         if (loto7 != null)
         {
+            _output.AppendText($"Draw {loto7.Date:yyyyMMdd}: {string.Join(",", loto7.Numbers)} +[{string.Join(",", loto7.Bonus)}]" + Environment.NewLine);
             CsvStorage.AppendLoto7("loto7result.csv", loto7);
-            _output.AppendText($"LOTO7 {loto7.Date:yyyyMMdd}: {string.Join(",", loto7.Numbers)} +[{string.Join(",", loto7.Bonus)}]{Environment.NewLine}");
+            _output.AppendText("Saved LOTO7 result." + Environment.NewLine);
+        }
+        else
+        {
+            _output.AppendText("Failed to fetch LOTO7." + Environment.NewLine);
         }
     }
 
