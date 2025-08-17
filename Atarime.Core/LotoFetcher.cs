@@ -3,11 +3,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Atarime.Core;
 
-namespace Atarime.CLI;
+namespace Atarime.Core;
 
-internal static class LotoFetcher
+public static class LotoFetcher
 {
     private static readonly HttpClient _http = new();
 
