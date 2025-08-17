@@ -24,4 +24,26 @@ public static class StatisticsCalculator
 
     public static Dictionary<int, int> CalculateNumberFrequencies(IEnumerable<Loto7Result> results)
         => CountNumbers(results.Select(r => r.Numbers));
+
+    private static IEnumerable<KeyValuePair<int, int>> TopNumbers(Dictionary<int, int> frequencies, int topCount)
+        => frequencies
+            .OrderByDescending(kv => kv.Value)
+            .ThenBy(kv => kv.Key)
+            .Take(topCount);
+
+    public static IEnumerable<KeyValuePair<int, int>> GetMostFrequentNumbers(
+        IEnumerable<Loto6Result> results, int windowSize, int topCount)
+    {
+        var subset = results.TakeLast(windowSize);
+        var freq = CalculateNumberFrequencies(subset);
+        return TopNumbers(freq, topCount);
+    }
+
+    public static IEnumerable<KeyValuePair<int, int>> GetMostFrequentNumbers(
+        IEnumerable<Loto7Result> results, int windowSize, int topCount)
+    {
+        var subset = results.TakeLast(windowSize);
+        var freq = CalculateNumberFrequencies(subset);
+        return TopNumbers(freq, topCount);
+    }
 }
