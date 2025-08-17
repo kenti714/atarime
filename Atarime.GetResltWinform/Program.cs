@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace Atarime.WinForms;
+namespace Atarime.GetResltWinform;
 
 internal static class Program
 {
@@ -9,6 +9,6 @@ internal static class Program
     private static void Main()
     {
         ApplicationConfiguration.Initialize();
-        Application.Run(new MainForm());
+        Application.Run(new GetResltWinForm());
     }
 }

@@ -4,16 +4,16 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Atarime.Core;
 
-namespace Atarime.WinForms;
+namespace Atarime.GetResltWinform;
 
-public class MainForm : Form
+public class GetResltWinForm : Form
 {
     private readonly Button _fetchButton;
     private readonly Button _showButton;
     private readonly Button _fetchAllButton;
     private readonly TextBox _output;
 
-    public MainForm()
+    public GetResltWinForm()
     {
         Text = "Atarime";
         Width = 600;
