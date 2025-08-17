@@ -11,13 +11,20 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atarime.AI", "Atarime.AI\At
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atarime.CLI", "Atarime.CLI\Atarime.CLI.csproj", "{D45432AB-7C2C-4B77-8ECD-0146CE1242DF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atarime.WinForms", "Atarime.WinForms\Atarime.WinForms.csproj", "{8707481E-50A9-574E-B0CF-1F1F99599348}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ソリューション項目", "ソリューション項目", "{2022CB0F-8BAF-F49E-0C48-8EF4C96EC109}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "result", "result", "{DDB4EF12-CC4E-5E88-E6FC-71A802F4DE97}"
+	ProjectSection(SolutionItems) = preProject
+		result\loto6result.csv = result\loto6result.csv
+		result\loto7result.csv = result\loto7result.csv
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{41E29D49-74BC-41C2-8075-4618071FABFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -36,5 +43,15 @@ Global
 		{D45432AB-7C2C-4B77-8ECD-0146CE1242DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D45432AB-7C2C-4B77-8ECD-0146CE1242DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D45432AB-7C2C-4B77-8ECD-0146CE1242DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8707481E-50A9-574E-B0CF-1F1F99599348}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8707481E-50A9-574E-B0CF-1F1F99599348}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8707481E-50A9-574E-B0CF-1F1F99599348}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8707481E-50A9-574E-B0CF-1F1F99599348}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EFAB2C01-9AEA-4768-8ADF-B200A2B0591C}
 	EndGlobalSection
 EndGlobal

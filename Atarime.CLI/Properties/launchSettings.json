@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Atarime.CLI": {
+      "commandName": "Project",
+      "commandLineArgs": "--mode lot6 --all all"
+    }
+  }
+}
