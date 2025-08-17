@@ -20,6 +20,7 @@ public static class LotoFetcher
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
     }
 
+
     public static async Task<Loto6Result?> FetchLoto6Async(Action<string>? log = null)
     {
         try
@@ -35,6 +36,7 @@ public static class LotoFetcher
             var fileMatch = Regex.Match(nameTxt, @"A\d+\.CSV");
             if (!fileMatch.Success)
                 throw new Exception("CSV name not found");
+
 
             return await FetchLoto6ByFileAsync(fileMatch.Value, log);
         }
@@ -222,6 +224,7 @@ public static class LotoFetcher
     }
 
     public static async Task<List<Loto7Result>> FetchAllLoto7Async(Action<string>? log = null)
+
     {
         var results = new List<Loto7Result>();
         try
@@ -235,6 +238,7 @@ public static class LotoFetcher
             var prefix = fileMatch.Groups[1].Value;
             int latest = int.Parse(fileMatch.Groups[2].Value);
             for (int i = 1; i <= latest; i++)
+
             {
                 var file = $"A{prefix}{i:0000}.CSV";
                 try
@@ -251,6 +255,7 @@ public static class LotoFetcher
         catch (Exception ex)
         {
             log?.Invoke($"FetchAll LOTO7 failed: {ex.Message}");
+
         }
         return results;
     }

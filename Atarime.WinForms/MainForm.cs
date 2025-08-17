@@ -53,6 +53,7 @@ public class MainForm : Form
         if (loto6 != null)
         {
             _output.AppendText($"No.{loto6.No} {loto6.Date:yyyyMMdd}: {string.Join(",", loto6.Numbers)} +[{loto6.Bonus}]" + Environment.NewLine);
+
             CsvStorage.AppendLoto6("loto6result.csv", loto6);
             _output.AppendText("Saved LOTO6 result." + Environment.NewLine);
         }
@@ -66,6 +67,7 @@ public class MainForm : Form
         if (loto7 != null)
         {
             _output.AppendText($"No.{loto7.No} {loto7.Date:yyyyMMdd}: {string.Join(",", loto7.Numbers)} +[{string.Join(",", loto7.Bonus)}]" + Environment.NewLine);
+
             CsvStorage.AppendLoto7("loto7result.csv", loto7);
             _output.AppendText("Saved LOTO7 result." + Environment.NewLine);
         }
