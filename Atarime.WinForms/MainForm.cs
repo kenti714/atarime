@@ -40,8 +40,16 @@ public class MainForm : Form
 
     private async Task FetchLatestAsync()
     {
+        void Log(string message)
+        {
+            if (_output.InvokeRequired)
+                _output.Invoke(new Action(() => _output.AppendText(message + Environment.NewLine)));
+            else
+                _output.AppendText(message + Environment.NewLine);
+        }
+
         _output.AppendText("Fetching latest LOTO6..." + Environment.NewLine);
-        var loto6 = await LotoFetcher.FetchLoto6Async();
+        var loto6 = await LotoFetcher.FetchLoto6Async(Log);
         if (loto6 != null)
         {
             _output.AppendText($"Draw {loto6.Date:yyyyMMdd}: {string.Join(",", loto6.Numbers)} +[{loto6.Bonus}]" + Environment.NewLine);
@@ -54,7 +62,7 @@ public class MainForm : Form
         }
 
         _output.AppendText("Fetching latest LOTO7..." + Environment.NewLine);
-        var loto7 = await LotoFetcher.FetchLoto7Async();
+        var loto7 = await LotoFetcher.FetchLoto7Async(Log);
         if (loto7 != null)
         {
             _output.AppendText($"Draw {loto7.Date:yyyyMMdd}: {string.Join(",", loto7.Numbers)} +[{string.Join(",", loto7.Bonus)}]" + Environment.NewLine);

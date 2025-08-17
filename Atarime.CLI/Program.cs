@@ -13,7 +13,7 @@ internal class Program
 
         if (mode == "loto7")
         {
-            var result = await LotoFetcher.FetchLoto7Async();
+            var result = await LotoFetcher.FetchLoto7Async(Console.WriteLine);
             if (result != null)
             {
                 Console.WriteLine($"Draw {result.Date:yyyyMMdd}: {string.Join(",", result.Numbers)} +[{string.Join(",", result.Bonus)}]");
@@ -28,7 +28,7 @@ internal class Program
         }
         else
         {
-            var result = await LotoFetcher.FetchLoto6Async();
+            var result = await LotoFetcher.FetchLoto6Async(Console.WriteLine);
             if (result != null)
             {
                 Console.WriteLine($"Draw {result.Date:yyyyMMdd}: {string.Join(",", result.Numbers)} +[{result.Bonus}]");

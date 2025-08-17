@@ -18,20 +18,22 @@ public static class LotoFetcher
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36");
     }
 
-    public static async Task<Loto6Result?> FetchLoto6Async()
+    public static async Task<Loto6Result?> FetchLoto6Async(Action<string>? log = null)
     {
         try
         {
             // The LOTO6 result is provided via JSON which is loaded by the web page.
-            var request = new HttpRequestMessage(
-                HttpMethod.Get,
-                "https://www.mizuhobank.co.jp/takarakuji/lottery/json/loto6.json");
+            var url = "https://www.mizuhobank.co.jp/takarakuji/lottery/json/loto6.json";
+            log?.Invoke($"GET {url}");
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Referrer = new Uri("https://www.mizuhobank.co.jp/takarakuji/check/loto/loto6/index.html");
             request.Headers.Add("X-Requested-With", "XMLHttpRequest");
             request.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
             var response = await _http.SendAsync(request);
-            response.EnsureSuccessStatusCode();
+            log?.Invoke($"Status {(int)response.StatusCode} {response.ReasonPhrase}");
             var json = await response.Content.ReadAsStringAsync();
+            log?.Invoke(json.Length > 200 ? json.Substring(0,200) + "..." : json);
+            response.EnsureSuccessStatusCode();
 
             using var doc = JsonDocument.Parse(json);
             JsonElement root = doc.RootElement;
@@ -103,17 +105,27 @@ public static class LotoFetcher
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Fetch LOTO6 failed: {ex.Message}");
+            log?.Invoke($"Fetch LOTO6 failed: {ex.Message}");
+            if (log == null)
+                Console.Error.WriteLine($"Fetch LOTO6 failed: {ex.Message}");
         }
 
         return null;
     }
 
-    public static async Task<Loto7Result?> FetchLoto7Async()
+    public static async Task<Loto7Result?> FetchLoto7Async(Action<string>? log = null)
     {
         try
         {
-            var html = await _http.GetStringAsync("https://www.mizuhobank.co.jp/takarakuji/check/loto/loto7/index.html");
+            var url = "https://www.mizuhobank.co.jp/takarakuji/check/loto/loto7/index.html";
+            log?.Invoke($"GET {url}");
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            var response = await _http.SendAsync(request);
+            log?.Invoke($"Status {(int)response.StatusCode} {response.ReasonPhrase}");
+            var html = await response.Content.ReadAsStringAsync();
+            log?.Invoke(html.Length > 200 ? html.Substring(0,200) + "..." : html);
+            response.EnsureSuccessStatusCode();
+
             var numbers = Regex.Matches(html, @"<td class=""alnCenter"">(\d{1,2})</td>")
                                .Select(m => int.Parse(m.Groups[1].Value))
                                .ToList();
@@ -127,7 +139,9 @@ public static class LotoFetcher
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Fetch LOTO7 failed: {ex.Message}");
+            log?.Invoke($"Fetch LOTO7 failed: {ex.Message}");
+            if (log == null)
+                Console.Error.WriteLine($"Fetch LOTO7 failed: {ex.Message}");
         }
         return null;
     }
