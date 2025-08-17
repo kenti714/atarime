@@ -1,44 +1,80 @@
 using System;
-using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Atarime.Core;
-using Atarime.Statistics;
-using Atarime.AI;
 
 namespace Atarime.WinForms;
 
 public class MainForm : Form
 {
-    private readonly Button _loadButton;
-    private readonly DataGridView _grid;
+    private readonly Button _fetchButton;
+    private readonly Button _showButton;
+    private readonly TextBox _output;
 
     public MainForm()
     {
         Text = "Atarime";
-        _loadButton = new Button { Text = "Load LOTO6", Dock = DockStyle.Top };
-        _loadButton.Click += LoadButton_Click;
-        _grid = new DataGridView { Dock = DockStyle.Fill, ReadOnly = true, AutoGenerateColumns = true };
-        Controls.Add(_grid);
-        Controls.Add(_loadButton);
+        Width = 600;
+        Height = 400;
+
+        _fetchButton = new Button { Text = "直近の結果を取得", AutoSize = true };
+        _showButton = new Button { Text = "直近の抽選結果を表示", AutoSize = true };
+        _fetchButton.Click += async (s, e) => await FetchLatestAsync();
+        _showButton.Click += (s, e) => DisplayLatest();
+
+        var panel = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true };
+        panel.Controls.AddRange(new Control[] { _fetchButton, _showButton });
+
+        _output = new TextBox
+        {
+            Multiline = true,
+            Dock = DockStyle.Fill,
+            ReadOnly = true,
+            ScrollBars = ScrollBars.Vertical
+        };
+
+        Controls.Add(_output);
+        Controls.Add(panel);
     }
 
-    private void LoadButton_Click(object? sender, EventArgs e)
+    private async Task FetchLatestAsync()
     {
-        const string path = "loto6result.csv";
-        if (!File.Exists(path))
+        var loto6 = await LotoFetcher.FetchLoto6Async();
+        if (loto6 != null)
         {
-            MessageBox.Show($"CSV not found: {path}");
-            return;
+            CsvStorage.AppendLoto6("loto6result.csv", loto6);
+            _output.AppendText($"LOTO6 {loto6.Date:yyyyMMdd}: {string.Join(",", loto6.Numbers)} +[{loto6.Bonus}]{Environment.NewLine}");
         }
 
-        var results = CsvStorage.ReadLoto6(path);
-        var freq = StatisticsCalculator.CalculateNumberFrequencies(results);
-        var prediction = PredictionEngine.PredictNext(freq);
-        var display = freq
-            .OrderByDescending(kv => kv.Value)
-            .Select(kv => new { Number = kv.Key, Count = kv.Value, Predicted = prediction.Contains(kv.Key) })
-            .ToList();
-        _grid.DataSource = display;
+        var loto7 = await LotoFetcher.FetchLoto7Async();
+        if (loto7 != null)
+        {
+            CsvStorage.AppendLoto7("loto7result.csv", loto7);
+            _output.AppendText($"LOTO7 {loto7.Date:yyyyMMdd}: {string.Join(",", loto7.Numbers)} +[{string.Join(",", loto7.Bonus)}]{Environment.NewLine}");
+        }
+    }
+
+    private void DisplayLatest()
+    {
+        var last6 = CsvStorage.ReadLoto6("loto6result.csv").LastOrDefault();
+        if (last6 != null)
+        {
+            _output.AppendText($"Latest LOTO6: {last6.Date:yyyyMMdd} {string.Join(",", last6.Numbers)} +[{last6.Bonus}]{Environment.NewLine}");
+        }
+        else
+        {
+            _output.AppendText("Latest LOTO6: no data\n");
+        }
+
+        var last7 = CsvStorage.ReadLoto7("loto7result.csv").LastOrDefault();
+        if (last7 != null)
+        {
+            _output.AppendText($"Latest LOTO7: {last7.Date:yyyyMMdd} {string.Join(",", last7.Numbers)} +[{string.Join(",", last7.Bonus)}]{Environment.NewLine}");
+        }
+        else
+        {
+            _output.AppendText("Latest LOTO7: no data\n");
+        }
     }
 }
