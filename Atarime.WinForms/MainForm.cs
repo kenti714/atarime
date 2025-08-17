@@ -20,14 +20,14 @@ public class MainForm : Form
         Height = 400;
 
         _fetchButton = new Button { Text = "直近の結果を取得", AutoSize = true };
-        _showButton = new Button { Text = "直近の抽選結果を表示", AutoSize = true };
         _fetchAllButton = new Button { Text = "過去の抽選結果をすべて取得", AutoSize = true };
+        _showButton = new Button { Text = "直近の抽選結果を表示", AutoSize = true };
         _fetchButton.Click += async (s, e) => await FetchLatestAsync();
         _showButton.Click += (s, e) => DisplayLatest();
         _fetchAllButton.Click += async (s, e) => await FetchAllAsync();
 
         var panel = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true };
-        panel.Controls.AddRange(new Control[] { _fetchButton, _showButton, _fetchAllButton });
+        panel.Controls.AddRange(new Control[] { _fetchButton, _fetchAllButton , _showButton });
 
         _output = new TextBox
         {
