@@ -18,7 +18,7 @@ public static class CsvStorage
     {
         EnsureHeader(path, Loto6Header);
         var line = string.Join(",",
-            $"第{result.No}回",
+            result.No.ToString(),
             result.Date.ToString("yyyyMMdd"),
             string.Join(",", result.Numbers.Select(n => n.ToString("00"))),
             result.Bonus.ToString("00"));
@@ -29,7 +29,7 @@ public static class CsvStorage
     {
         EnsureHeader(path, Loto7Header);
         var line = string.Join(",",
-            $"第{result.No}回",
+            result.No.ToString(),
             result.Date.ToString("yyyyMMdd"),
             string.Join(",", result.Numbers.Select(n => n.ToString("00"))),
             string.Join(",", result.Bonus.Select(n => n.ToString("00"))));
@@ -74,7 +74,7 @@ public static class CsvStorage
     {
         var lines = new List<string> { string.Join(",", Loto6Header) };
         lines.AddRange(results.Select(r => string.Join(",",
-            $"第{r.No}回",
+            r.No.ToString(),
             r.Date.ToString("yyyyMMdd"),
             string.Join(",", r.Numbers.Select(n => n.ToString("00"))),
             r.Bonus.ToString("00"))));
@@ -85,7 +85,7 @@ public static class CsvStorage
     {
         var lines = new List<string> { string.Join(",", Loto7Header) };
         lines.AddRange(results.Select(r => string.Join(",",
-            $"第{r.No}回",
+            r.No.ToString(),
             r.Date.ToString("yyyyMMdd"),
             string.Join(",", r.Numbers.Select(n => n.ToString("00"))),
             string.Join(",", r.Bonus.Select(n => n.ToString("00"))))));

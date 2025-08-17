@@ -10,6 +10,7 @@ public class MainForm : Form
 {
     private readonly Button _fetchButton;
     private readonly Button _showButton;
+    private readonly Button _fetchAllButton;
     private readonly TextBox _output;
 
     public MainForm()
@@ -20,11 +21,13 @@ public class MainForm : Form
 
         _fetchButton = new Button { Text = "直近の結果を取得", AutoSize = true };
         _showButton = new Button { Text = "直近の抽選結果を表示", AutoSize = true };
+        _fetchAllButton = new Button { Text = "過去の抽選結果をすべて取得", AutoSize = true };
         _fetchButton.Click += async (s, e) => await FetchLatestAsync();
         _showButton.Click += (s, e) => DisplayLatest();
+        _fetchAllButton.Click += async (s, e) => await FetchAllAsync();
 
         var panel = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true };
-        panel.Controls.AddRange(new Control[] { _fetchButton, _showButton });
+        panel.Controls.AddRange(new Control[] { _fetchButton, _showButton, _fetchAllButton });
 
         _output = new TextBox
         {
@@ -75,6 +78,27 @@ public class MainForm : Form
         {
             _output.AppendText("Failed to fetch LOTO7." + Environment.NewLine);
         }
+    }
+
+    private async Task FetchAllAsync()
+    {
+        void Log(string message)
+        {
+            if (_output.InvokeRequired)
+                _output.Invoke(new Action(() => _output.AppendText(message + Environment.NewLine)));
+            else
+                _output.AppendText(message + Environment.NewLine);
+        }
+
+        _output.AppendText("Fetching all LOTO6..." + Environment.NewLine);
+        var all6 = await LotoFetcher.FetchAllLoto6Async(Log);
+        CsvStorage.WriteLoto6("loto6result.csv", all6);
+        _output.AppendText($"Saved {all6.Count} LOTO6 results." + Environment.NewLine);
+
+        _output.AppendText("Fetching all LOTO7..." + Environment.NewLine);
+        var all7 = await LotoFetcher.FetchAllLoto7Async(Log);
+        CsvStorage.WriteLoto7("loto7result.csv", all7);
+        _output.AppendText($"Saved {all7.Count} LOTO7 results." + Environment.NewLine);
     }
 
     private void DisplayLatest()
