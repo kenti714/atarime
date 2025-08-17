@@ -156,12 +156,19 @@ public static class LotoFetcher
         return new Loto7Result(no, date, numbers, bonus);
     }
 
-    public static async Task<List<Loto6Result>> FetchAllLoto6Async(Action<string>? log = null)
+    public static Task<List<Loto6Result>> FetchAllLoto6Async(Action<string>? log = null)
+        => FetchLoto6SinceAsync(1, log);
+
+    public static Task<List<Loto7Result>> FetchAllLoto7Async(Action<string>? log = null)
+        => FetchLoto7SinceAsync(1, log);
+
+    public static async Task<List<Loto6Result>> FetchLoto6SinceAsync(int startNo, Action<string>? log = null)
     {
         var results = new List<Loto6Result>();
+        if (startNo < 1) startNo = 1;
         try
         {
-            for (int start = 1; ; start += 20)
+            for (int start = ((startNo - 1) / 20) * 20 + 1; ; start += 20)
             {
                 var pageUrl = $"https://www.mizuhobank.co.jp/takarakuji/check/loto/backnumber/loto6{start:0000}.html";
                 log?.Invoke($"GET {pageUrl}");
@@ -179,6 +186,7 @@ public static class LotoFetcher
                 foreach (Match m in rowRe.Matches(html))
                 {
                     var no = int.Parse(m.Groups[1].Value);
+                    if (no < startNo) continue;
                     var tdMatches = Regex.Matches(m.Groups[2].Value, "<td[^>]*><p[^>]*>([^<]+)</p></td>");
                     if (tdMatches.Count >= 8)
                     {
@@ -199,14 +207,14 @@ public static class LotoFetcher
             {
                 var prefix = fileMatch.Groups[1].Value;
                 int latest = int.Parse(fileMatch.Groups[2].Value);
-                int startNo = results.Count > 0 ? results.Max(r => r.No) + 1 : 1;
-                for (int i = startNo; i <= latest; i++)
+                int next = results.Count > 0 ? results.Max(r => r.No) + 1 : startNo;
+                for (int i = next; i <= latest; i++)
                 {
                     var file = $"A{prefix}{i:0000}.CSV";
                     try
                     {
                         var r = await FetchLoto6ByFileAsync(file, log);
-                        if (r != null) results.Add(r);
+                        if (r != null && r.No >= startNo) results.Add(r);
                     }
                     catch (Exception ex)
                     {
@@ -217,16 +225,16 @@ public static class LotoFetcher
         }
         catch (Exception ex)
         {
-            log?.Invoke($"FetchAll LOTO6 failed: {ex.Message}");
+            log?.Invoke($"Fetch LOTO6 since {startNo} failed: {ex.Message}");
         }
         results.Sort((a, b) => a.No.CompareTo(b.No));
         return results;
     }
 
-    public static async Task<List<Loto7Result>> FetchAllLoto7Async(Action<string>? log = null)
-
+    public static async Task<List<Loto7Result>> FetchLoto7SinceAsync(int startNo, Action<string>? log = null)
     {
         var results = new List<Loto7Result>();
+        if (startNo < 1) startNo = 1;
         try
         {
             var nameUrl = "https://www.mizuhobank.co.jp/takarakuji/apl/txt/loto7/name.txt";
@@ -237,8 +245,7 @@ public static class LotoFetcher
             if (!fileMatch.Success) throw new Exception("CSV name not found");
             var prefix = fileMatch.Groups[1].Value;
             int latest = int.Parse(fileMatch.Groups[2].Value);
-            for (int i = 1; i <= latest; i++)
-
+            for (int i = startNo; i <= latest; i++)
             {
                 var file = $"A{prefix}{i:0000}.CSV";
                 try
@@ -254,7 +261,7 @@ public static class LotoFetcher
         }
         catch (Exception ex)
         {
-            log?.Invoke($"FetchAll LOTO7 failed: {ex.Message}");
+            log?.Invoke($"Fetch LOTO7 since {startNo} failed: {ex.Message}");
 
         }
         return results;
