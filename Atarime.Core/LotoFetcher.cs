@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
-using System.Globalization;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Globalization;
+using System.Text;
 
 namespace Atarime.Core;
 
@@ -16,92 +16,46 @@ public static class LotoFetcher
     {
         _http.DefaultRequestHeaders.UserAgent.ParseAdd(
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36");
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
     }
 
     public static async Task<Loto6Result?> FetchLoto6Async(Action<string>? log = null)
     {
         try
         {
-            // The LOTO6 result is provided via JSON which is loaded by the web page.
-            var url = "https://www.mizuhobank.co.jp/takarakuji/lottery/json/loto6.json";
-            log?.Invoke($"GET {url}");
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.Referrer = new Uri("https://www.mizuhobank.co.jp/takarakuji/check/loto/loto6/index.html");
-            request.Headers.Add("X-Requested-With", "XMLHttpRequest");
-            request.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-            var response = await _http.SendAsync(request);
-            log?.Invoke($"Status {(int)response.StatusCode} {response.ReasonPhrase}");
-            var json = await response.Content.ReadAsStringAsync();
-            log?.Invoke(json.Length > 200 ? json.Substring(0,200) + "..." : json);
-            response.EnsureSuccessStatusCode();
+            var nameUrl = "https://www.mizuhobank.co.jp/takarakuji/apl/txt/loto6/name.txt";
+            log?.Invoke($"GET {nameUrl}");
+            var nameResp = await _http.GetAsync(nameUrl);
+            log?.Invoke($"Status {(int)nameResp.StatusCode} {nameResp.ReasonPhrase}");
+            var nameTxt = await nameResp.Content.ReadAsStringAsync();
+            log?.Invoke(nameTxt.Length > 200 ? nameTxt.Substring(0,200) + "..." : nameTxt);
+            nameResp.EnsureSuccessStatusCode();
 
-            using var doc = JsonDocument.Parse(json);
-            JsonElement root = doc.RootElement;
-            JsonElement first = default;
+            var fileMatch = Regex.Match(nameTxt, @"A\d+\.CSV");
+            if (!fileMatch.Success)
+                throw new Exception("CSV name not found");
 
-            if (root.ValueKind == JsonValueKind.Array)
-            {
-                first = root.EnumerateArray().FirstOrDefault();
-            }
-            else
-            {
-                foreach (var prop in root.EnumerateObject())
-                {
-                    if (prop.Value.ValueKind == JsonValueKind.Array &&
-                        prop.Value.GetArrayLength() > 0 &&
-                        prop.Value[0].ValueKind == JsonValueKind.Object)
-                    {
-                        first = prop.Value[0];
-                        break;
-                    }
-                }
-            }
+            var csvUrl = $"https://www.mizuhobank.co.jp/retail/takarakuji/loto/loto6/csv/{fileMatch.Value}";
+            log?.Invoke($"GET {csvUrl}");
+            var csvResp = await _http.GetAsync(csvUrl);
+            log?.Invoke($"Status {(int)csvResp.StatusCode} {csvResp.ReasonPhrase}");
+            csvResp.EnsureSuccessStatusCode();
+            var bytes = await csvResp.Content.ReadAsByteArrayAsync();
+            var csv = System.Text.Encoding.GetEncoding("shift_jis").GetString(bytes);
+            log?.Invoke(csv.Length > 200 ? csv.Substring(0,200) + "..." : csv);
 
-            if (first.ValueKind == JsonValueKind.Object)
-            {
-                DateTime? date = null;
-                int[]? numbers = null;
-                int? bonus = null;
+            var lines = csv.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            if (lines.Length < 3)
+                throw new Exception("CSV format unexpected");
 
-                foreach (var p in first.EnumerateObject())
-                {
-                    if (!date.HasValue && p.Name.Contains("date", StringComparison.OrdinalIgnoreCase) &&
-                        p.Value.ValueKind == JsonValueKind.String)
-                    {
-                        var s = p.Value.GetString() ?? string.Empty;
-                        s = s.Replace("年", "/").Replace("月", "/").Replace("日", "");
-                        if (DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out var d))
-                            date = d;
-                    }
-                    else if (p.Value.ValueKind == JsonValueKind.Array)
-                    {
-                        var arr = p.Value.EnumerateArray()
-                                         .Where(e => e.ValueKind == JsonValueKind.Number)
-                                         .Select(e => e.GetInt32())
-                                         .ToArray();
-                        if (arr.Length >= 6 && numbers == null)
-                        {
-                            numbers = arr.Take(6).ToArray();
-                            if (arr.Length >= 7) bonus ??= arr[6];
-                        }
-                        else if (arr.Length == 1 && bonus == null)
-                        {
-                            bonus = arr[0];
-                        }
-                    }
-                    else if (p.Value.ValueKind == JsonValueKind.Number &&
-                             p.Name.Contains("bonus", StringComparison.OrdinalIgnoreCase) &&
-                             !bonus.HasValue)
-                    {
-                        bonus = p.Value.GetInt32();
-                    }
-                }
+            var header = lines[1].Split(',');
+            var nums = lines[3].Split(',');
 
-                if (date.HasValue && numbers != null && bonus.HasValue)
-                {
-                    return new Loto6Result(date.Value, numbers, bonus.Value);
-                }
-            }
+            var date = ParseJapaneseDate(header[2]);
+            var numbers = nums.Skip(1).Take(6).Select(s => int.Parse(s)).ToArray();
+            var bonus = int.Parse(nums[^1]);
+
+            return new Loto6Result(date, numbers, bonus);
         }
         catch (Exception ex)
         {
@@ -111,6 +65,19 @@ public static class LotoFetcher
         }
 
         return null;
+    }
+
+    private static DateTime ParseJapaneseDate(string s)
+    {
+        var m = Regex.Match(s, @"令和(\d+)年(\d+)月(\d+)日");
+        if (m.Success)
+        {
+            int year = int.Parse(m.Groups[1].Value) + 2018;
+            int month = int.Parse(m.Groups[2].Value);
+            int day = int.Parse(m.Groups[3].Value);
+            return new DateTime(year, month, day);
+        }
+        return DateTime.Parse(s, CultureInfo.InvariantCulture);
     }
 
     public static async Task<Loto7Result?> FetchLoto7Async(Action<string>? log = null)
