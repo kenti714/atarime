@@ -52,7 +52,8 @@ public class MainForm : Form
         var loto6 = await LotoFetcher.FetchLoto6Async(Log);
         if (loto6 != null)
         {
-            _output.AppendText($"Draw {loto6.Date:yyyyMMdd}: {string.Join(",", loto6.Numbers)} +[{loto6.Bonus}]" + Environment.NewLine);
+            _output.AppendText($"No.{loto6.No} {loto6.Date:yyyyMMdd}: {string.Join(",", loto6.Numbers)} +[{loto6.Bonus}]" + Environment.NewLine);
+
             CsvStorage.AppendLoto6("loto6result.csv", loto6);
             _output.AppendText("Saved LOTO6 result." + Environment.NewLine);
         }
@@ -65,7 +66,8 @@ public class MainForm : Form
         var loto7 = await LotoFetcher.FetchLoto7Async(Log);
         if (loto7 != null)
         {
-            _output.AppendText($"Draw {loto7.Date:yyyyMMdd}: {string.Join(",", loto7.Numbers)} +[{string.Join(",", loto7.Bonus)}]" + Environment.NewLine);
+            _output.AppendText($"No.{loto7.No} {loto7.Date:yyyyMMdd}: {string.Join(",", loto7.Numbers)} +[{string.Join(",", loto7.Bonus)}]" + Environment.NewLine);
+
             CsvStorage.AppendLoto7("loto7result.csv", loto7);
             _output.AppendText("Saved LOTO7 result." + Environment.NewLine);
         }
@@ -79,22 +81,14 @@ public class MainForm : Form
     {
         var last6 = CsvStorage.ReadLoto6("loto6result.csv").LastOrDefault();
         if (last6 != null)
-        {
-            _output.AppendText($"Latest LOTO6: {last6.Date:yyyyMMdd} {string.Join(",", last6.Numbers)} +[{last6.Bonus}]{Environment.NewLine}");
-        }
+            _output.AppendText($"Latest LOTO6: No.{last6.No} {last6.Date:yyyyMMdd} {string.Join(",", last6.Numbers)} +[{last6.Bonus}]{Environment.NewLine}");
         else
-        {
             _output.AppendText("Latest LOTO6: no data\n");
-        }
 
         var last7 = CsvStorage.ReadLoto7("loto7result.csv").LastOrDefault();
         if (last7 != null)
-        {
-            _output.AppendText($"Latest LOTO7: {last7.Date:yyyyMMdd} {string.Join(",", last7.Numbers)} +[{string.Join(",", last7.Bonus)}]{Environment.NewLine}");
-        }
+            _output.AppendText($"Latest LOTO7: No.{last7.No} {last7.Date:yyyyMMdd} {string.Join(",", last7.Numbers)} +[{string.Join(",", last7.Bonus)}]{Environment.NewLine}");
         else
-        {
             _output.AppendText("Latest LOTO7: no data\n");
-        }
     }
 }
