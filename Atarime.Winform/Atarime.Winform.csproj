@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <OutputType>WinExe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Atarime.GetResltWinform\Atarime.GetResltWinform.csproj" />
+    <ProjectReference Include="..\Atarime.Statistics\Atarime.Statistics.csproj" />
+    <ProjectReference Include="..\Atarime.MySelect\Atarime.MySelect.csproj" />
+  </ItemGroup>
+</Project>
