@@ -40,18 +40,38 @@ public class MainForm : Form
 
     private async Task FetchLatestAsync()
     {
-        var loto6 = await LotoFetcher.FetchLoto6Async();
-        if (loto6 != null)
+        void Log(string message)
         {
-            CsvStorage.AppendLoto6("loto6result.csv", loto6);
-            _output.AppendText($"LOTO6 {loto6.Date:yyyyMMdd}: {string.Join(",", loto6.Numbers)} +[{loto6.Bonus}]{Environment.NewLine}");
+            if (_output.InvokeRequired)
+                _output.Invoke(new Action(() => _output.AppendText(message + Environment.NewLine)));
+            else
+                _output.AppendText(message + Environment.NewLine);
         }
 
-        var loto7 = await LotoFetcher.FetchLoto7Async();
+        _output.AppendText("Fetching latest LOTO6..." + Environment.NewLine);
+        var loto6 = await LotoFetcher.FetchLoto6Async(Log);
+        if (loto6 != null)
+        {
+            _output.AppendText($"No.{loto6.No} {loto6.Date:yyyyMMdd}: {string.Join(",", loto6.Numbers)} +[{loto6.Bonus}]" + Environment.NewLine);
+            CsvStorage.AppendLoto6("loto6result.csv", loto6);
+            _output.AppendText("Saved LOTO6 result." + Environment.NewLine);
+        }
+        else
+        {
+            _output.AppendText("Failed to fetch LOTO6." + Environment.NewLine);
+        }
+
+        _output.AppendText("Fetching latest LOTO7..." + Environment.NewLine);
+        var loto7 = await LotoFetcher.FetchLoto7Async(Log);
         if (loto7 != null)
         {
+            _output.AppendText($"No.{loto7.No} {loto7.Date:yyyyMMdd}: {string.Join(",", loto7.Numbers)} +[{string.Join(",", loto7.Bonus)}]" + Environment.NewLine);
             CsvStorage.AppendLoto7("loto7result.csv", loto7);
-            _output.AppendText($"LOTO7 {loto7.Date:yyyyMMdd}: {string.Join(",", loto7.Numbers)} +[{string.Join(",", loto7.Bonus)}]{Environment.NewLine}");
+            _output.AppendText("Saved LOTO7 result." + Environment.NewLine);
+        }
+        else
+        {
+            _output.AppendText("Failed to fetch LOTO7." + Environment.NewLine);
         }
     }
 
@@ -59,22 +79,14 @@ public class MainForm : Form
     {
         var last6 = CsvStorage.ReadLoto6("loto6result.csv").LastOrDefault();
         if (last6 != null)
-        {
-            _output.AppendText($"Latest LOTO6: {last6.Date:yyyyMMdd} {string.Join(",", last6.Numbers)} +[{last6.Bonus}]{Environment.NewLine}");
-        }
+            _output.AppendText($"Latest LOTO6: No.{last6.No} {last6.Date:yyyyMMdd} {string.Join(",", last6.Numbers)} +[{last6.Bonus}]{Environment.NewLine}");
         else
-        {
             _output.AppendText("Latest LOTO6: no data\n");
-        }
 
         var last7 = CsvStorage.ReadLoto7("loto7result.csv").LastOrDefault();
         if (last7 != null)
-        {
-            _output.AppendText($"Latest LOTO7: {last7.Date:yyyyMMdd} {string.Join(",", last7.Numbers)} +[{string.Join(",", last7.Bonus)}]{Environment.NewLine}");
-        }
+            _output.AppendText($"Latest LOTO7: No.{last7.No} {last7.Date:yyyyMMdd} {string.Join(",", last7.Numbers)} +[{string.Join(",", last7.Bonus)}]{Environment.NewLine}");
         else
-        {
             _output.AppendText("Latest LOTO7: no data\n");
-        }
     }
 }
